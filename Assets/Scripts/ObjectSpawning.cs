@@ -68,7 +68,7 @@ public class ObjectSpawning : MonoBehaviour
         toReset.transform.position = Vector3.zero;
         return toReset;
     }
-    public PositionAndRotation GetSpawnPosition(GameObject meshRoot,float yPos,Quaternion desiredRotation)
+    public PositionAndRotation GetSpawnPosition(GameObject meshRoot,Quaternion desiredRotation)
     {
         PositionAndRotation posAndRot = new PositionAndRotation();
         List<Partition> viable = new List<Partition>();
@@ -228,7 +228,7 @@ public class Partition
 
     public bool isUsed;
 
-    private const float minPartitionEdgeLength = 0;//0.2f;
+    private const float minPartitionEdgeLength = 0.2f;
     public Partition(Vector3 botLeft, Vector3 topRight, Partition parent, bool isUsed = false)
     {
         _botLeft = botLeft;

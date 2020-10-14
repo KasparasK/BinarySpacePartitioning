@@ -51,10 +51,15 @@ public class SpawningControler : MonoBehaviour
         objectSpawning.Setup(spawnBoundsObj, topOffeset, botOffset, rightOffset, leftOffset);
 
         Quaternion desiredRotation = Quaternion.Euler(xAngle,yAngle,zAngle);
-        
-        PositionAndRotation pos = objectSpawning.GetSpawnPosition(objToSpawn, 0.5f, desiredRotation);
-        GameObject obs =  Instantiate(objToSpawn, pos.position, pos.rotation);
-        
-        spawned.Add(obs);
+
+        for (int i = 0; i < 2; i++)
+        {
+            PositionAndRotation pos = objectSpawning.GetSpawnPosition(objToSpawn, desiredRotation);
+            GameObject obs = Instantiate(objToSpawn, pos.position, pos.rotation);
+
+            spawned.Add(obs);
+        }
+
+   
     }
 }
