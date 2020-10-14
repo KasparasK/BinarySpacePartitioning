@@ -45,12 +45,11 @@ public class SpawningControler : MonoBehaviour
             DestroyImmediate(obj);
         }
         objectSpawning.ClearPartitions();
-
         objectSpawning.Setup(spawnBoundsObj);
 
         Quaternion desiredRotation = Quaternion.Euler(xAngle,yAngle,zAngle);
         
-        PositionAndRotation pos = objectSpawning.GetTreasureSpawnPosition(objToSpawn, 0.5f, desiredRotation);
+        PositionAndRotation pos = objectSpawning.GetSpawnPosition(objToSpawn, 0.5f, desiredRotation);
         GameObject obs =  Instantiate(objToSpawn, pos.position, pos.rotation);
         
         spawned.Add(obs);
