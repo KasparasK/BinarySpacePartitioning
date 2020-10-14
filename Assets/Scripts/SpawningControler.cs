@@ -19,6 +19,9 @@ public class SpawningControler : MonoBehaviour
     public float yAngle;
     [Range(-180, 180)]
     public float zAngle;
+
+    public float topOffeset, botOffset, rightOffset, leftOffset;
+
     private List<GameObject> spawned
     {
         get
@@ -45,7 +48,7 @@ public class SpawningControler : MonoBehaviour
             DestroyImmediate(obj);
         }
         objectSpawning.ClearPartitions();
-        objectSpawning.Setup(spawnBoundsObj);
+        objectSpawning.Setup(spawnBoundsObj, topOffeset, botOffset, rightOffset, leftOffset);
 
         Quaternion desiredRotation = Quaternion.Euler(xAngle,yAngle,zAngle);
         

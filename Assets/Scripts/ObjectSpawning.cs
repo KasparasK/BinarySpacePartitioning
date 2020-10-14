@@ -21,20 +21,20 @@ public class ObjectSpawning : MonoBehaviour
     private Vector3 objSpawnAreaTopRightCorner;
     private Vector3 objSpawnAreaBotLeftCorner;
 
-    private Vector3 coinsSpawnAreaTopRight;
-    private Vector3 coinsSpawnAreaBotLeft;
-
     private Vector3 objBoundsTopRight, objBoundsBotLeft;//, objBoundsTopLeft, objBoundsBotRight;
 
     private Partition treasureRoot;
-    private Partition coinsRoot;
 
-//    private float objectY;
-
+    private float topOffeset, botOffset, rightOffset, leftOffset;
 
     private System.Random rng;
-    public void Setup (GameObject spawnBoundsObj)
+    public void Setup (GameObject spawnBoundsObj, float topOffeset, float botOffset, float rightOffset, float leftOffset)
     {
+        this.topOffeset = topOffeset;
+        this.botOffset = botOffset;
+        this.rightOffset = rightOffset;
+        this.leftOffset = leftOffset;
+
         this.spawnBoundsObj = spawnBoundsObj;
     }
 
@@ -57,89 +57,11 @@ public class ObjectSpawning : MonoBehaviour
 
         spawnTopRightCorner = new Vector3(center.x + spawnBounds.extents.x, center.y, center.z + spawnBounds.extents.z);
         spawnBotLeftCorner = new Vector3(center.x - spawnBounds.extents.x, center.y, center.z - spawnBounds.extents.z);
-    }
 
-    #region coins (remove?)
-/*
-    void FirstCoint()
-    {
-        objectY = combinedBounds.center.y + combinedBounds.extents.y;
-        //Debug.Log(spawnTopRightCorner - spawnBotLeftCorner);
-
-        Vector3 botOffset = new Vector3(0.05f, 0, 0.14f);
-        Vector3 topOffset = new Vector3(0.05f, 0, 0.07f);
-        coinsSpawnAreaTopRight = spawnTopRightCorner - topOffset;
-        coinsSpawnAreaBotLeft = spawnBotLeftCorner + botOffset;
-
-        coinsRoot = new Partition(coinsSpawnAreaBotLeft, coinsSpawnAreaTopRight, null);
-        //  Debug.Log((spawnTopRightCorner - topOffset) - (spawnBotLeftCorner + botOffset));
-    }
-
-    public Vector3? GetCoinPosition(GameObject coin)
-    {
-        if (coinsRoot == null)
-            FirstCoint();
-
-        combinedBounds = HelperMethods.GetCombinedBounds(coin);
-
-
-        Vector3 center = combinedBounds.center;
-        Vector3 extents = combinedBounds.extents;
-
-        SetObjectBoundsPoints(center, extents, objectY);
-
-        List<Partition> viable = new List<Partition>();
-        coinsRoot.GetPartionsOfSize(combinedBounds.size, ref viable);
-
-        if (viable.Count == 0)
-        {
-            Debug.LogError("no viable coin spot found");
-            return null;
-        }
-        Vector3 pivotOffset = Vector3.zero;//center - (objBoundsBotLeftRot + objBoundsBotRightRot) / 2;//kadangi pivotas ne centre o apacioj
-
-        int rngPart = rng.Next(0, viable.Count);
-
-        objSpawnAreaTopRightCorner = new Vector3(
-            viable[rngPart]._topRight.x - extents.x - pivotOffset.x,
-            objectY,
-            viable[rngPart]._topRight.z - extents.z - pivotOffset.z
-        );
-
-        objSpawnAreaBotLeftCorner = new Vector3(
-            viable[rngPart]._botLeft.x + extents.x - pivotOffset.x,
-            objectY,
-            viable[rngPart]._botLeft.z + extents.z - pivotOffset.z
-        );
-
-        float x = Random.Range(objSpawnAreaBotLeftCorner.x, objSpawnAreaTopRightCorner.x);
-        float z = Random.Range(objSpawnAreaBotLeftCorner.z, objSpawnAreaTopRightCorner.z);
-
-        objBoundsTopRight = new Vector3(
-            x + extents.x + pivotOffset.x,
-            objectY,
-            z + extents.z + pivotOffset.z
-        );
-
-        objBoundsBotLeft = new Vector3(
-            x - extents.x + pivotOffset.x,
-            objectY,
-            z - extents.z + pivotOffset.z
-        );
-
-        viable[rngPart].PartitionThis(
-            objBoundsBotLeft,
-            objBoundsTopRight
-        );
-
-        Vector3 randPos = new Vector3(x, objectY, z);
-
-        return randPos;
+        spawnTopRightCorner -= new Vector3(topOffeset, 0, leftOffset);
+        spawnBotLeftCorner += new Vector3(botOffset, 0, rightOffset);
 
     }
-
-    */
-    #endregion
 
     GameObject ResetPosition(GameObject toReset)
     {
