@@ -228,7 +228,6 @@ public class Partition
 
     public bool isUsed;
 
-    private const float minPartitionEdgeLength = 0.2f;
     public Partition(Vector3 botLeft, Vector3 topRight, Partition parent, bool isUsed = false)
     {
         _botLeft = botLeft;
@@ -280,197 +279,56 @@ public class Partition
         }
     }
 
-    bool DistTooSmall(Vector3 i, Vector3 j)
-    {
-        if (Vector3.Distance(i, j) <= minPartitionEdgeLength)
-            return true;
-
-        return false;
-    }
-
     public void PartitionThis(Vector3 botLeft, Vector3 topRight)
     {
-
         partitions = new List<Partition>();
+
         float y = botLeft.y;
 
-        bool[] skipIDs = new bool[9];
+        Side0(botLeft, y);
+        Side1(botLeft,topRight,y);
+        Side2(topRight, y);
+        Side3(botLeft, topRight, y);
 
-        Vector3 maintR = topRight;
-        Vector3 mainbL = botLeft;
+        CenterPartition(botLeft, topRight);
+    }
+    //0 1 2
+    //7 8 3
+    //6 5 4
+    // 7,0 column (side 0)
+    // 1,2 row    (side 1)
+    // 3,4 column (side 2)
+    // 5,6 row    (side 3)
 
-        Partition0(ref skipIDs, y, ref mainbL, botLeft);
-        Partition2(ref skipIDs, y, ref mainbL, ref maintR, botLeft, topRight);
-        Partition6(ref skipIDs, y, ref mainbL, ref maintR, botLeft, topRight);
-        Partition8(ref skipIDs, y, ref maintR, topRight);
+    void Side0(Vector3 objBotLeft, float y)
+    {
+        Vector3 tR = new Vector3(objBotLeft.x, y, _topRight.z);
+        Vector3 bL = new Vector3(_botLeft.x, y, objBotLeft.z);
+        partitions.Add(new Partition(bL, tR, this));
 
-        Partition1(skipIDs, y, botLeft, topRight);
-        Partition3(skipIDs, y, botLeft, topRight);
-        Partition5(skipIDs, y, botLeft, topRight);
-        Partition7(skipIDs, y, botLeft, topRight);
+    }
+    void Side1(Vector3 objBotLeft, Vector3 objTopRight, float y)
+    {
+        Vector3 tR = new Vector3(_topRight.x, y, _topRight.z);
+        Vector3 bL = new Vector3(objBotLeft.x, y, objTopRight.z);
+        partitions.Add(new Partition(bL, tR, this));
 
-        CenterPartition(mainbL, maintR);
     }
 
-    void Partition0(ref bool[] skipIDs, float y, ref Vector3 mainbL, Vector3 originalBotLeft)
+    void Side2( Vector3 objTopRight, float y)
     {
-        Vector3 tR = originalBotLeft; //top right
-        Vector3 bL = _botLeft;//bot left
+        Vector3 tR = new Vector3(_topRight.x, y, objTopRight.z);
+        Vector3 bL = new Vector3(objTopRight.x, y, _botLeft.z);
+        partitions.Add(new Partition(bL, tR, this));
 
-        Vector3 tL = new Vector3(bL.x, y, tR.z);
-        Vector3 bR = new Vector3(tR.x, y, bL.z);
-
-        if (DistTooSmall(tR, tL) && DistTooSmall(bR, tR)) //visi edge per mazi, jungt 3 segmentus
-        {
-            mainbL = bL;
-            skipIDs[0] = true;
-            skipIDs[1] = true;
-            skipIDs[3] = true;
-        }
-        else if (DistTooSmall(tR, tL)) //tip virsutinis edge
-        {
-            mainbL = tL;
-            skipIDs[1] = true;
-        }
-        else if (DistTooSmall(bR, tR)) //tip soninis edge
-        {
-            mainbL = bR;
-            skipIDs[3] = true;
-        }
-        if (!skipIDs[0])
-            partitions.Add(new Partition(bL, tR, this)); //0
-    }
-    void Partition2(ref bool[] skipIDs, float y, ref Vector3 mainbL, ref Vector3 maintR, Vector3 originalBotLeft, Vector3 originalTopRight)
-    {
-        Vector3 tR = new Vector3(originalBotLeft.x, y, _topRight.z);
-        Vector3 bL = new Vector3(_botLeft.x, y, originalTopRight.z);
-
-        Vector3 tL = new Vector3(bL.x, y, tR.z);
-        Vector3 bR = new Vector3(tR.x, y, bL.z);
-
-        if (DistTooSmall(tR, tL) && DistTooSmall(bR, tR)) //visi edge per mazi, jungt 3 segmentus
-        {
-            if (skipIDs[0] != true) // jei  0 partition nepajungtas
-                mainbL = new Vector3(_botLeft.x, y, originalBotLeft.z);
-
-            if (skipIDs[8] != true) // jei  8 partition nepajungtas
-                maintR = new Vector3(originalTopRight.x, y, _topRight.z);
-
-
-
-            skipIDs[2] = true;
-            skipIDs[1] = true;
-            skipIDs[5] = true;
-        }
-        else if (DistTooSmall(tR, tL)) //tik apatinis edge
-        {
-            if (skipIDs[0] != true)
-                mainbL = new Vector3(_botLeft.x, y, originalBotLeft.z);
-            skipIDs[1] = true;
-        }
-        else if (DistTooSmall(bR, tR)) //tip soninis edge
-        {
-            if (skipIDs[8] != true)
-                maintR = new Vector3(originalTopRight.x, y, _topRight.z);
-            skipIDs[5] = true;
-        }
-        if (!skipIDs[2])
-            partitions.Add(new Partition(bL, tR, this));//2
-    }
-    void Partition6(ref bool[] skipIDs, float y, ref Vector3 mainbL, ref Vector3 maintR, Vector3 originalBotLeft, Vector3 originalTopRight)
-    {
-        Vector3 tR = new Vector3(_topRight.x, y, originalBotLeft.z);
-        Vector3 bL = new Vector3(originalTopRight.x, y, _botLeft.z);
-        Vector3 tL = new Vector3(bL.x, y, tR.z);
-        Vector3 bR = new Vector3(tR.x, y, bL.z);
-
-        if (DistTooSmall(tR, tL) && DistTooSmall(bR, tR)) //visi edge per mazi, jungt 3 segmentus
-        {
-            if (skipIDs[0] != true) // jei jau 0 partition pajungtas
-                mainbL = new Vector3(originalBotLeft.x, y, _botLeft.z);
-
-            if (skipIDs[8] != true) // jei jau 8 partition pajungtas
-                maintR = new Vector3(_topRight.x, y, originalTopRight.z);
-
-
-
-            skipIDs[6] = true;
-            skipIDs[3] = true;
-            skipIDs[7] = true;
-        }
-        else if (DistTooSmall(tR, tL)) //tik virsutinis edge
-        {
-            if (skipIDs[8] != true) // jei jau 8 partition pajungtas
-                maintR = new Vector3(_topRight.x, y, originalTopRight.z);
-            skipIDs[7] = true;
-        }
-        else if (DistTooSmall(bR, tR)) //tip soninis edge
-        {
-            if (skipIDs[0] != true) // jei jau 0 partition pajungtas
-                mainbL = new Vector3(originalBotLeft.x, y, _botLeft.z);
-            skipIDs[3] = true;
-        }
-
-        if (!skipIDs[6])
-            partitions.Add(new Partition(bL, tR, this));//2
-    }
-    void Partition8(ref bool[] skipIDs, float y, ref Vector3 maintR, Vector3 originalTopRight)
-    {
-        Vector3 tR = _topRight; //top right
-        Vector3 bL = originalTopRight;//bot left
-
-        Vector3 tL = new Vector3(bL.x, y, tR.z);
-        Vector3 bR = new Vector3(tR.x, y, bL.z);
-
-        if (DistTooSmall(tR, tL) && DistTooSmall(bR, tR)) //visi edge per mazi, jungt 3 segmentus
-        {
-            maintR = tR;
-            skipIDs[8] = true;
-            skipIDs[7] = true;
-            skipIDs[5] = true;
-        }
-        else if (DistTooSmall(tR, tL)) //tik apatinis edge
-        {
-            maintR = bR;
-            skipIDs[7] = true;
-        }
-        else if (DistTooSmall(bR, tR)) //tip apatinis edge
-        {
-            maintR = tL;
-            skipIDs[5] = true;
-        }
-        if (!skipIDs[8])
-            partitions.Add(new Partition(bL, tR, this)); //0
     }
 
-    void Partition1(bool[] skipIDs, float y, Vector3 originalBotLeft, Vector3 originalTopRight)
+    void Side3(Vector3 objBotLeft, Vector3 objTopRight, float y)
     {
-        Vector3 tR = new Vector3(originalBotLeft.x, y, originalTopRight.z);
-        Vector3 bL = new Vector3(_botLeft.x, y, originalBotLeft.z);
+        Vector3 tR = new Vector3(objTopRight.x, y, objBotLeft.z);
+        Vector3 bL = new Vector3(_botLeft.x, y, _botLeft.z);
+        partitions.Add(new Partition(bL, tR, this));
 
-        if (!skipIDs[1])
-            partitions.Add(new Partition(bL, tR, this)); //1
-    }
-    void Partition3(bool[] skipIDs, float y, Vector3 originalBotLeft, Vector3 originalTopRight)
-    {
-        Vector3 tR = new Vector3(originalTopRight.x, y, originalBotLeft.z);
-        Vector3 bL = new Vector3(originalBotLeft.x, y, _botLeft.z);
-        if (!skipIDs[3])
-            partitions.Add(new Partition(bL, tR, this));
-    }
-    void Partition5(bool[] skipIDs, float y, Vector3 originalBotLeft, Vector3 originalTopRight)
-    {
-        Vector3 tR = new Vector3(originalTopRight.x, y, _topRight.z);
-        Vector3 bL = new Vector3(originalBotLeft.x, y, originalTopRight.z);
-        if (!skipIDs[5])
-            partitions.Add(new Partition(bL, tR, this));
-    }
-    void Partition7(bool[] skipIDs, float y, Vector3 originalBotLeft, Vector3 originalTopRight)
-    {
-        Vector3 tR = new Vector3(_topRight.x, y, originalTopRight.z);
-        Vector3 bL = new Vector3(originalTopRight.x, y, originalBotLeft.z);
-        if (!skipIDs[7])
-            partitions.Add(new Partition(bL, tR, this));
     }
 
     void CenterPartition(Vector3 mainbL, Vector3 maintR)
