@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 
 public class SpawningControler : MonoBehaviour
@@ -50,10 +51,11 @@ public class SpawningControler : MonoBehaviour
         objectSpawning.ClearPartitions();
         objectSpawning.Setup(spawnBoundsObj, topOffeset, botOffset, rightOffset, leftOffset);
 
-        Quaternion desiredRotation = Quaternion.Euler(xAngle,yAngle,zAngle);
 
-        for (int i = 0; i < 2; i++)
+        for (int i = 0; i < 3; i++)
         {
+            Quaternion desiredRotation = Quaternion.Euler(Random.Range(-180,180), Random.Range(-180, 180), Random.Range(-180, 180));
+
             PositionAndRotation pos = objectSpawning.GetSpawnPosition(objToSpawn, desiredRotation);
             GameObject obs = Instantiate(objToSpawn, pos.position, pos.rotation);
 
