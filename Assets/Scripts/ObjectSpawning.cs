@@ -31,6 +31,8 @@ public class ObjectSpawning : MonoBehaviour
 
     private float objectY;
 
+
+    private System.Random rng;
     public void Setup (GameObject spawnBoundsObj)
     {
         this.spawnBoundsObj = spawnBoundsObj;
@@ -43,10 +45,21 @@ public class ObjectSpawning : MonoBehaviour
 
     void FirstObject()
     {
-        SetSpawnArea();
+        rng = new System.Random();
+        SetTotalSpawnArea();
         treasureRoot = new Partition(spawnBotLeftCorner, spawnTopRightCorner, null);
         
     }
+    void SetTotalSpawnArea()
+    {
+        spawnBounds = spawnBoundsObj.GetComponent<Renderer>().bounds;
+        Vector3 center = spawnBounds.center;
+
+        spawnTopRightCorner = new Vector3(center.x + spawnBounds.extents.x, center.y, center.z + spawnBounds.extents.z);
+        spawnBotLeftCorner = new Vector3(center.x - spawnBounds.extents.x, center.y, center.z - spawnBounds.extents.z);
+    }
+
+    #region coins (remove?)
 
     void FirstCoint()
     {
@@ -59,12 +72,12 @@ public class ObjectSpawning : MonoBehaviour
         coinsSpawnAreaBotLeft = spawnBotLeftCorner + botOffset;
 
         coinsRoot = new Partition(coinsSpawnAreaBotLeft, coinsSpawnAreaTopRight, null);
-      //  Debug.Log((spawnTopRightCorner - topOffset) - (spawnBotLeftCorner + botOffset));
+        //  Debug.Log((spawnTopRightCorner - topOffset) - (spawnBotLeftCorner + botOffset));
     }
 
     public Vector3? GetCoinPosition(GameObject coin)
     {
-        if(coinsRoot == null)
+        if (coinsRoot == null)
             FirstCoint();
 
         combinedBounds = HelperMethods.GetCombinedBounds(coin);
@@ -74,7 +87,7 @@ public class ObjectSpawning : MonoBehaviour
         Vector3 extents = combinedBounds.extents;
 
         SetObjectBoundsPoints(center, extents, objectY);
-    
+
         List<Partition> viable = new List<Partition>();
         coinsRoot.GetPartionsOfSize(combinedBounds.size, ref viable);
 
@@ -85,7 +98,7 @@ public class ObjectSpawning : MonoBehaviour
         }
         Vector3 pivotOffset = Vector3.zero;//center - (objBoundsBotLeftRot + objBoundsBotRightRot) / 2;//kadangi pivotas ne centre o apacioj
 
-        int rngPart = Random.Range(0, viable.Count);
+        int rngPart = rng.Next(0, viable.Count);
 
         objSpawnAreaTopRightCorner = new Vector3(
             viable[rngPart]._topRight.x - extents.x - pivotOffset.x,
@@ -125,6 +138,9 @@ public class ObjectSpawning : MonoBehaviour
 
     }
 
+
+    #endregion
+
     GameObject ResetPosition(GameObject toReset)
     {
         toReset.transform.position = Vector3.zero;
@@ -132,7 +148,10 @@ public class ObjectSpawning : MonoBehaviour
     }
     public PositionAndRotation GetTreasureSpawnPosition(GameObject meshRoot,float yPos,Quaternion desiredRotation)
     {
-        ResetPosition(meshRoot);
+        PositionAndRotation posAndRot = new PositionAndRotation();
+        List<Partition> viable = new List<Partition>();
+
+        meshRoot = ResetPosition(meshRoot);
 
         meshRoot.transform.rotation = desiredRotation;
 
@@ -140,15 +159,11 @@ public class ObjectSpawning : MonoBehaviour
         if (treasureRoot == null)
             FirstObject();
 
-        PositionAndRotation posAndRot = new PositionAndRotation();
-
         combinedBounds = HelperMethods.GetCombinedBounds(meshRoot);
         Vector3 center = combinedBounds.center;
         Vector3 extents = combinedBounds.extents;
 
         SetObjectBoundsPoints(center, extents, objectY);
-
-        List<Partition> viable = new List<Partition>();
 
         Vector3 rotatedSize =  objBoundsTopRight - objBoundsBotLeft ;
         
@@ -165,56 +180,62 @@ public class ObjectSpawning : MonoBehaviour
         Vector3 rotatedExtents = rotatedSize / 2;
         Vector3 pivotOffset = center;
 
-        int rngPart = Random.Range(0, viable.Count);
+        int rngPart = rng.Next(0, viable.Count);
 
-        objSpawnAreaTopRightCorner = new Vector3(
-            viable[rngPart]._topRight.x - rotatedExtents.x - pivotOffset.x,
-            objectY,
-            viable[rngPart]._topRight.z - rotatedExtents.z - pivotOffset.z
-        );
+        SetViableObjSpawnArea(viable[rngPart],rotatedExtents, pivotOffset);
 
-        objSpawnAreaBotLeftCorner = new Vector3(
-            viable[rngPart]._botLeft.x + rotatedExtents.x - pivotOffset.x,
-            objectY,
-            viable[rngPart]._botLeft.z + rotatedExtents.z - pivotOffset.z
-        );
+        Vector3 pos = GetRandomSpawnPosition();
 
-        float x = Random.Range(objSpawnAreaBotLeftCorner.x, objSpawnAreaTopRightCorner.x);
-        float z = Random.Range(objSpawnAreaBotLeftCorner.z, objSpawnAreaTopRightCorner.z);
-
-        objBoundsTopRight = new Vector3(
-            x + rotatedExtents.x + pivotOffset.x,
-            objectY, 
-            z + rotatedExtents.z + pivotOffset.z
-            );
-
-        objBoundsBotLeft = new Vector3(
-            x - rotatedExtents.x + pivotOffset.x,
-            objectY,
-            z - rotatedExtents.z + pivotOffset.z
-            );
+        ChangeObjectBoundsAcordingToSpawnPos(pos, rotatedExtents, pivotOffset);
 
         viable[rngPart].PartitionThis(
             objBoundsBotLeft,
             objBoundsTopRight
         );
 
-
-        Vector3 randPos = new Vector3(x, objectY, z);
-
-        posAndRot.position = randPos;
+          posAndRot.position = pos;
 
         return posAndRot;
     }
 
-    void SetSpawnArea()
+    void SetViableObjSpawnArea(Partition partition, Vector3 rotatedExtents, Vector3 pivotOffset)
     {
-        spawnBounds = spawnBoundsObj.GetComponent<Renderer>().bounds;
-        Vector3 center = spawnBounds.center;
+        objSpawnAreaTopRightCorner = new Vector3(
+            partition._topRight.x - rotatedExtents.x - pivotOffset.x,
+            objectY,
+            partition._topRight.z - rotatedExtents.z - pivotOffset.z
+        );
 
-        spawnTopRightCorner = new Vector3(center.x + spawnBounds.extents.x, center.y, center.z + spawnBounds.extents.z);
-        spawnBotLeftCorner = new Vector3(center.x - spawnBounds.extents.x, center.y, center.z - spawnBounds.extents.z);
+        objSpawnAreaBotLeftCorner = new Vector3(
+            partition._botLeft.x + rotatedExtents.x - pivotOffset.x,
+            objectY,
+            partition._botLeft.z + rotatedExtents.z - pivotOffset.z
+        );
     }
+
+    Vector3 GetRandomSpawnPosition() //in a viable area
+    {
+        float x = Random.Range(objSpawnAreaBotLeftCorner.x, objSpawnAreaTopRightCorner.x);
+        float z = Random.Range(objSpawnAreaBotLeftCorner.z, objSpawnAreaTopRightCorner.z);
+
+        return  new Vector3(x, objectY, z);
+    }
+
+    void ChangeObjectBoundsAcordingToSpawnPos(Vector3 pos, Vector3 rotatedExtents, Vector3 pivotOffset)
+    {
+        objBoundsTopRight = new Vector3(
+            pos.x + rotatedExtents.x + pivotOffset.x,
+            pos.y,
+            pos.z + rotatedExtents.z + pivotOffset.z
+        );
+
+        objBoundsBotLeft = new Vector3(
+            pos.x - rotatedExtents.x + pivotOffset.x,
+            pos.y,
+            pos.z - rotatedExtents.z + pivotOffset.z
+        );
+    }
+   
     void SetObjectBoundsPoints(Vector3 center, Vector3 extents, float y)
     {
         objBoundsTopRight = new Vector3(center.x + extents.x, y, center.z + extents.z);
