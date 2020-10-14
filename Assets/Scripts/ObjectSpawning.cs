@@ -132,10 +132,13 @@ public class ObjectSpawning : MonoBehaviour
         toReset.transform.position = Vector3.zero;
         return toReset;
     }
-    public PositionAndRotation GetTreasureSpawnPosition(GameObject meshRoot,float yPos,bool rotate)
+    public PositionAndRotation GetTreasureSpawnPosition(GameObject meshRoot,float yPos,float angle,bool rotate)
     {
         ResetPosition(meshRoot);
-        
+
+      //  float angle = rotate ? /*Random.Range(-20, 20)*/45 : 0;
+        meshRoot.transform.rotation = Quaternion.Euler(new Vector3(angle, angle, angle));
+
         objectY = yPos;
         if (treasureRoot == null)
             FirstObject();
@@ -146,12 +149,7 @@ public class ObjectSpawning : MonoBehaviour
         Vector3 center = combinedBounds.center;
         Vector3 extents = combinedBounds.extents;
 
-        float angle = rotate? Random.Range(-20, 20): 0;
-    //    Debug.Log(combinedBounds.center);
-
         SetObjectBoundsPoints(center, extents, objectY);
-        RotateBoundsPoints(center, angle);
-   //     Debug.Log(combinedBounds.center);
 
         List<Partition> viable = new List<Partition>();
 
@@ -226,81 +224,7 @@ public class ObjectSpawning : MonoBehaviour
         objBoundsBotRight = new Vector3(center.x + extents.x, y, center.z - extents.z);
         objBoundsBotLeft = new Vector3(center.x - extents.x, y, center.z - extents.z);
     }
-    Vector3 RotatePointAroundPivot(Vector3 point, Vector3 pivot, Vector3 angle)
-    {
-        Vector3 dir = point - pivot; // get point direction relative to pivot
-        dir = Quaternion.Euler(angle) * dir; // rotate it
-        point = dir + pivot; // calculate rotated point
-        return point; // return it
-    }
-    void RotateBoundsPoints(Vector3 center, float angle)
-    {
-        objBoundsTopRightRot = RotatePointAroundPivot(objBoundsTopRight, center, new Vector3(0, angle, 0));
-        objBoundsTopLeftRot = RotatePointAroundPivot(objBoundsTopLeft, center, new Vector3(0, angle, 0));
-        objBoundsBotRightRot = RotatePointAroundPivot(objBoundsBotRight, center, new Vector3(0, angle, 0));
-        objBoundsBotLeftRot = RotatePointAroundPivot(objBoundsBotLeft, center, new Vector3(0, angle, 0));
-
-
-        AdjustObjBoundsByRotation(angle);
-    }
-
-    #region Adjust object bounds acording to rotation
-    void AdjustObjBoundsByRotation(float angle)
-    {
-        angle = toPositiveAngle(angle);
-        
-        int quadrant = (int)(angle / 90);
-
-        switch (quadrant)
-        {
-            case 0:
-                Quadrant0();
-                break;
-            case 1:
-                Quadrant1();
-
-                break;
-            case 2:
-                Quadrant2();
-
-                break;
-            case 3:
-                Quadrant3();
-
-                break;
-        }
-    }
-    float toPositiveAngle(float angle)
-    {
-        while (angle < 0)
-        { //pretty sure this comparison is valid for doubles and floats
-            angle += 360.0f;
-        }
-
-        return angle;
-    }
-    void Quadrant0()
-    {
-        objBoundsTopRight = new Vector3(objBoundsTopRightRot.x, objectY, objBoundsTopLeftRot.z);
-        objBoundsBotLeft = new Vector3(objBoundsBotLeftRot.x, objectY, objBoundsBotRightRot.z);
-    }
-    void Quadrant1()
-    {
-        objBoundsTopRight = new Vector3(objBoundsTopLeftRot.x, objectY, objBoundsBotLeftRot.z);
-        objBoundsBotLeft = new Vector3(objBoundsBotRightRot.x, objectY, objBoundsTopRightRot.z);
-    }
-    void Quadrant2()
-    {
-        objBoundsTopRight = new Vector3(objBoundsBotLeftRot.x, objectY, objBoundsBotRightRot.z);
-        objBoundsBotLeft = new Vector3(objBoundsTopRightRot.x, objectY, objBoundsTopLeftRot.z);
-    }
-    void Quadrant3()
-    {
-        objBoundsTopRight = new Vector3(objBoundsBotRightRot.x, objectY, objBoundsTopRightRot.z);
-        objBoundsBotLeft = new Vector3(objBoundsTopLeftRot.x, objectY, objBoundsBotLeftRot.z);
-    }
-
-    #endregion
+  
 
     #region Debuging/visualization
     void VisualizePartitions(Partition root)
@@ -363,7 +287,7 @@ public class Partition
 
     public bool isUsed;
 
-    private const float minPartitionEdgeLength = 0.2f;
+    private const float minPartitionEdgeLength = 0;//0.2f;
     public Partition(Vector3 botLeft, Vector3 topRight, Partition parent, bool isUsed = false)
     {
         _botLeft = botLeft;

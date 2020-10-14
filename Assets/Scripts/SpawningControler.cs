@@ -13,6 +13,8 @@ public class SpawningControler : MonoBehaviour
     public ObjectSpawning objectSpawning;
 
     private List<GameObject> _spawned;
+    [Range(-90,90)]
+    public float angle;
 
     private List<GameObject> spawned
     {
@@ -43,9 +45,9 @@ public class SpawningControler : MonoBehaviour
 
         objectSpawning.Setup(spawnBoundsObj);
 
-         PositionAndRotation pos = objectSpawning.GetTreasureSpawnPosition(objToSpawn, 0.5f, true);
+         PositionAndRotation pos = objectSpawning.GetTreasureSpawnPosition(objToSpawn, 0.5f, angle,true);
 
-        GameObject obs =  Instantiate(objToSpawn, pos.position,Quaternion.Euler(pos.rotation));
+        GameObject obs =  Instantiate(objToSpawn, pos.position,Quaternion.Euler(new Vector3(angle, angle, angle)));
         spawned.Add(obs);
     }
 }
