@@ -13,9 +13,12 @@ public class SpawningControler : MonoBehaviour
     public ObjectSpawning objectSpawning;
 
     private List<GameObject> _spawned;
-    [Range(-90,90)]
-    public float angle;
-
+    [Range(-180,180)]
+    public float xAngle;
+    [Range(-180, 180)]
+    public float yAngle;
+    [Range(-180, 180)]
+    public float zAngle;
     private List<GameObject> spawned
     {
         get
@@ -45,9 +48,11 @@ public class SpawningControler : MonoBehaviour
 
         objectSpawning.Setup(spawnBoundsObj);
 
-         PositionAndRotation pos = objectSpawning.GetTreasureSpawnPosition(objToSpawn, 0.5f, angle,true);
-
-        GameObject obs =  Instantiate(objToSpawn, pos.position,Quaternion.Euler(new Vector3(angle, angle, angle)));
+        Quaternion desiredRotation = Quaternion.Euler(xAngle,yAngle,zAngle);
+        
+        PositionAndRotation pos = objectSpawning.GetTreasureSpawnPosition(objToSpawn, 0.5f, desiredRotation);
+        GameObject obs =  Instantiate(objToSpawn, pos.position, pos.rotation);
+        
         spawned.Add(obs);
     }
 }

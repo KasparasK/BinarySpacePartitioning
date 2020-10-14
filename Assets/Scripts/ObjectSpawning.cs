@@ -5,7 +5,7 @@ using UnityEngine;
 public class PositionAndRotation
 {
     public Vector3 position;
-    public Vector3 rotation;
+    public Quaternion rotation;
 }
 
 public class ObjectSpawning : MonoBehaviour
@@ -24,9 +24,7 @@ public class ObjectSpawning : MonoBehaviour
     private Vector3 coinsSpawnAreaTopRight;
     private Vector3 coinsSpawnAreaBotLeft;
 
-
     Vector3 objBoundsTopRight, objBoundsTopLeft, objBoundsBotRight, objBoundsBotLeft;
-    Vector3 objBoundsTopRightRot, objBoundsTopLeftRot, objBoundsBotRightRot, objBoundsBotLeftRot;
 
     private Partition treasureRoot;
     private Partition coinsRoot;
@@ -132,12 +130,11 @@ public class ObjectSpawning : MonoBehaviour
         toReset.transform.position = Vector3.zero;
         return toReset;
     }
-    public PositionAndRotation GetTreasureSpawnPosition(GameObject meshRoot,float yPos,float angle,bool rotate)
+    public PositionAndRotation GetTreasureSpawnPosition(GameObject meshRoot,float yPos,Quaternion desiredRotation)
     {
         ResetPosition(meshRoot);
 
-      //  float angle = rotate ? /*Random.Range(-20, 20)*/45 : 0;
-        meshRoot.transform.rotation = Quaternion.Euler(new Vector3(angle, angle, angle));
+        meshRoot.transform.rotation = desiredRotation;
 
         objectY = yPos;
         if (treasureRoot == null)
@@ -162,7 +159,8 @@ public class ObjectSpawning : MonoBehaviour
             Debug.LogError("no viable treasure spot found");
             return null;
         }
-        posAndRot.rotation = new Vector3(0,angle,0);
+
+        posAndRot.rotation = desiredRotation;
 
         Vector3 rotatedExtents = rotatedSize / 2;
         Vector3 pivotOffset = center;
