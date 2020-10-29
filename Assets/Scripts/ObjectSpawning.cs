@@ -6,6 +6,7 @@ public class PositionAndRotation
 {
     public Vector3 position;
     public Quaternion rotation;
+    public bool viablePosFound;
 }
 
 public class ObjectSpawning : MonoBehaviour
@@ -92,8 +93,9 @@ public class ObjectSpawning : MonoBehaviour
 
         if (viable.Count == 0)
         {
+            posAndRot.viablePosFound = false;
             Debug.LogError("no viable treasure spot found");
-            return null;
+            return posAndRot;
         }
 
         posAndRot.rotation = desiredRotation;
@@ -113,8 +115,8 @@ public class ObjectSpawning : MonoBehaviour
             objBoundsBotLeft,
             objBoundsTopRight
         );
-
-          posAndRot.position = pos;
+        posAndRot.viablePosFound = true;
+        posAndRot.position = pos;
 
         return posAndRot;
     }
